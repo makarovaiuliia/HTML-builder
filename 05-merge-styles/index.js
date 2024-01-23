@@ -1,25 +1,29 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
-function buildCSSBundle() {
+async function buildCSSBundle() {
   const stylesDir = path.join(__dirname, 'styles');
   const outputDir = path.join(__dirname, 'project-dist');
   const outputFile = path.join(outputDir, 'bundle.css');
 
   let stylesContent = [];
 
-  const files = fs.readdirSync(stylesDir);
+  try {
+    const files = await fs.readdir(stylesDir);
 
-  files.forEach((file) => {
-    if (path.extname(file) === '.css') {
-      const filePath = path.join(stylesDir, file);
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      stylesContent.push(fileContent);
+    for (const file of files) {
+      if (path.extname(file) === '.css') {
+        const filePath = path.join(stylesDir, file);
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        stylesContent.push(fileContent);
+      }
     }
-  });
 
-  fs.writeFileSync(outputFile, stylesContent.join('\n'));
-  console.log('CSS bundle created successfully.');
+    await fs.writeFile(outputFile, stylesContent.join('\n'));
+    console.log('CSS bundle created successfully.');
+  } catch (error) {
+    console.error('Error occurred:', error);
+  }
 }
 
 buildCSSBundle();
